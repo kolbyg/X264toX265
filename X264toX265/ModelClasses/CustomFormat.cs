@@ -8,8 +8,8 @@ namespace X264toX265.ModelClasses
     class CustomFormat
     {
         [JsonProperty(PropertyName = "name")]
-        string Name;
+        public string Name { get; private set; }
         [JsonProperty(PropertyName = "id")]
-        int ID;
+        public int ID { get; private set; }
     }
 }

@@ -8,28 +8,28 @@ namespace X264toX265.ModelClasses
     class MediaInfo
     {
         [JsonProperty(PropertyName = "containerFormat")]
-        string ContainerFormat;
+        public string ContainerFormat { get; private set; }
         [JsonProperty(PropertyName = "videoFormat")]
-        string VideoFormat;
+        public string VideoFormat { get; private set; }
         [JsonProperty(PropertyName = "videoCodecID")]
-        string VideoCodecID;
+        public string VideoCodecID { get; private set; }
         [JsonProperty(PropertyName = "videoProfile")]
-        string VideoProfile;
+        public string VideoProfile { get; private set; }
         [JsonProperty(PropertyName = "videoBitrate")]
-        string VideoBitrate;
+        public string VideoBitrate { get; private set; }
         [JsonProperty(PropertyName = "videoBitdepth")]
-        string VideoBitdepth;
+        public string VideoBitdepth { get; private set; }
         [JsonProperty(PropertyName = "width")]
-        string Width;
+        public string Width { get; private set; }
         [JsonProperty(PropertyName = "height")]
-        string Height;
+        public string Height { get; private set; }
         [JsonProperty(PropertyName = "audioFormat")]
-        string AudioFormat;
+        public string AudioFormat { get; private set; }
         [JsonProperty(PropertyName = "audioCodecID")]
-        string AudioCodecID;
+        public string AudioCodecID { get; private set; }
         [JsonProperty(PropertyName = "audioBitrate")]
-        string AudioBitrate;
+        public string AudioBitrate { get; private set; }
         [JsonProperty(PropertyName = "videoFps")]
-        string VideoFPS;
+        public string VideoFPS { get; private set; }
     }
 }

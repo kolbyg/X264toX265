@@ -19,6 +19,8 @@ namespace X264toX265.File_Operations
             }
             catch(Exception ex)
             {
+                Utilities.Utilities.Logger.Error(ex.Message);
+                Utilities.Utilities.Logger.Debug(ex.InnerException);
                 return false;
             }
         }
@@ -31,6 +33,8 @@ namespace X264toX265.File_Operations
             }
             catch (Exception ex)
             {
+                Utilities.Utilities.Logger.Error(ex.Message);
+                Utilities.Utilities.Logger.Debug(ex.InnerException);
                 return false;
             }
         }
@@ -44,19 +48,9 @@ namespace X264toX265.File_Operations
             }
             catch (Exception ex)
             {
+                Utilities.Utilities.Logger.Error(ex.Message);
+                Utilities.Utilities.Logger.Debug(ex.InnerException);
                 return null;
-            }
-        }
-        public static bool LoadMovies(string MoviesJson)
-        {
-            try
-            {
-                Utilities.Utilities.CurrentSettings = JsonConvert.DeserializeObject<Utilities.Settings>(MoviesJson);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                return false;
             }
         }
     }

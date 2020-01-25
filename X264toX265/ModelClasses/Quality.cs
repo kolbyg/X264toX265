@@ -8,14 +8,14 @@ namespace X264toX265.ModelClasses
     class Quality
     {
         [JsonProperty(PropertyName = "id")]
-        int ID;
+        public int ID { get; private set; }
         [JsonProperty(PropertyName = "name")]
-        string Name;
+        public string Name { get; private set; }
         [JsonProperty(PropertyName = "source")]
-        string Source;
+        public string Source { get; private set; }
         [JsonProperty(PropertyName = "resolution")]
-        string Resolution;
+        public string Resolution { get; private set; }
         [JsonProperty(PropertyName = "modifier")]
-        string Modifier;
+        public string Modifier { get; private set; }
     }
 }

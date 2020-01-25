@@ -8,13 +8,13 @@ namespace X264toX265.ModelClasses
     class MovieFile
     {
         [JsonProperty(PropertyName = "movieID")]
-        int MovieID;
+        public int MovieID { get; private set; }
         [JsonProperty(PropertyName = "size")]
-        long Size;
+        public long Size { get; private set; }
         [JsonProperty(PropertyName = "quality")]
-        QualityProfile QualityProfile;
+        public QualityProfile QualityProfile { get; private set; }
         [JsonProperty(PropertyName = "mediaInfo")]
-        MediaInfo MediaInfo;
+        public MediaInfo MediaInfo { get; private set; }
 
     }
 }

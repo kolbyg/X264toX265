@@ -8,8 +8,8 @@ namespace X264toX265.ModelClasses
     class QualityProfile
     {
         [JsonProperty(PropertyName = "quality")]
-        Quality Quality;
+        public Quality Quality { get; private set; }
         [JsonProperty(PropertyName = "customFormats")]
-        List<CustomFormat> CustomFormats;
+        public List<CustomFormat> CustomFormats { get; private set; }
     }
 }

@@ -10,20 +10,27 @@ namespace X264toX265
             //Check if arguments were passed to the application
             if (CheckArguments(args))
             {
-                Console.WriteLine("Arguments were passed to the application.");
+                Utilities.Utilities.Logger.Info("Arguments were passed to the application.");
                 //TODO parse arguments
             }
             else
             {
                 //TODO: DoDefaultAction
-                Console.WriteLine("Arguments were NOT passed to the application.");
+                Utilities.Utilities.Logger.Info("Arguments were NOT passed to the application.");
             }
 
-            Console.WriteLine("Loading Settings");
+            Utilities.Utilities.Logger.Info("Loading Settings");
             LoadSettings();
 
-            Console.WriteLine("Being retrieving movies");
+            Utilities.Utilities.Logger.Info("Being retrieving movies");
             LoadMovies();
+
+            Utilities.Utilities.Logger.Info("Determining which, if any movies require conversion");
+            Utilities.Utilities.Movies = MediaOperations.CheckFileCodec.GetMovieConversionList(Utilities.Utilities.Movies);
+
+            //Do sonarr stuff
+
+
         }
         static bool CheckArguments(string[] args)
         {
@@ -35,14 +42,14 @@ namespace X264toX265
             if(!File.Exists(Utilities.Utilities.SettingsPath))
             {
                 if (File_Operations.Json.CreateSettings())
-                    Console.WriteLine("The Settings JSON file does not exist, it has been created. Please exit the application and modify the settings file appropriately.");
+                    Utilities.Utilities.Logger.Info("The Settings JSON file does not exist, it has been created. Please exit the application and modify the settings file appropriately.");
                 else
                     throw new Exception("There was an error writing the config file.");
             }
             else
             {
                 if (File_Operations.Json.LoadSettings())
-                    Console.WriteLine("The settings JSON has been loaded.");
+                    Utilities.Utilities.Logger.Info("The settings JSON has been loaded.");
                 else
                     throw new Exception("There was an error loading the config file.");
             }
@@ -50,12 +57,18 @@ namespace X264toX265
         }
         static bool LoadMovies()
         {
-            Console.WriteLine("Retrieving movies json output from the Radarr API");
-            string _radarrJsonMovies = Net.RadarrOperations.RetrieveMovies(Utilities.Utilities.CurrentSettings.RadarrURL,Utilities.Utilities.CurrentSettings.RadarrAPIKey);
-            Console.WriteLine("Parsing Radarr JSON");
-            Utilities.Utilities.Movies = File_Operations.Json.ParseMovies(_radarrJsonMovies);
-            Console.WriteLine("");
-            return false;
+            try
+            {
+                Utilities.Utilities.Logger.Info("Retrieving movies json output from the Radarr API");
+                string _radarrJsonMovies = Net.RadarrOperations.RetrieveMovies(Utilities.Utilities.CurrentSettings.RadarrURL, Utilities.Utilities.CurrentSettings.RadarrAPIKey);
+                Utilities.Utilities.Logger.Info("Parsing Radarr JSON");
+                Utilities.Utilities.Movies = File_Operations.Json.ParseMovies(_radarrJsonMovies);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
         }
     }
 }
