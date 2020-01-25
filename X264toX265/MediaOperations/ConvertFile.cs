@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Diagnostics;
+using System.IO;
 using NLog;
+using System.Threading.Tasks;
 
 namespace X264toX265.MediaOperations
 {
@@ -22,11 +25,38 @@ namespace X264toX265.MediaOperations
     }
     class ConvertFile
     {
-        private static Logger logger = LogManager.GetCurrentClassLogger();
+        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
         private static int InvokeFFmpeg(string SourcePath, string DestinationPath, ConversionOptions Options)
         {
-            string _ffmpegCommandBase = $"-i {SourcePath} -c:v {Options.EncoderLibraries[Options.EncoderLibrary]} -crf{Options.CRF} -profile:v {Options.Profiles[Options.Profile]} -pixel_format {Options.PixelFormats[Options.PixelFormat]} -preset {Options.PresetNames[Options.Preset]} -c:a {Options.AudioFormats[Options.AudioFormat]} {DestinationPath}";
+            string _ffmpegCommandBase = $"-i \"{SourcePath}\" -c:v {Options.EncoderLibraries[Options.EncoderLibrary]} -crf {Options.CRF} -profile:v {Options.Profiles[Options.Profile]} -pixel_format {Options.PixelFormats[Options.PixelFormat]} -preset {Options.PresetNames[Options.Preset]} -c:a {Options.AudioFormats[Options.AudioFormat]} \"{DestinationPath}\"";
             logger.Debug($"FFmpeg location is {Utilities.Utilities.CurrentSettings.FFmpegLocation}, converion string: {_ffmpegCommandBase}");
+            if(!File.Exists(SourcePath))
+            {
+                throw new Exception($"Source file passed to ffmpeg does not exist. {SourcePath}");
+            }
+            if (!Directory.Exists(DestinationPath.Remove(DestinationPath.LastIndexOf(@"\"))))
+                Directory.CreateDirectory(DestinationPath);
+            //await Task.Run(() =>
+            //{
+                Process p = new Process();
+                p.StartInfo.Arguments = _ffmpegCommandBase;
+                p.StartInfo.WorkingDirectory = Utilities.Utilities.CurrentSettings.FFmpegLocation;
+                p.StartInfo.FileName = $"{Utilities.Utilities.CurrentSettings.FFmpegLocation}\\ffmpeg.exe";
+            p.StartInfo.CreateNoWindow = false;
+                p.StartInfo.RedirectStandardError = true;
+                p.StartInfo.RedirectStandardOutput = true;
+
+                p.Start();
+                p.WaitForExit();
+
+                string output = p.StandardOutput.ReadToEnd();
+                string error = p.StandardError.ReadToEnd(); //ffmpeg seems to toss everything into stderr for some reason
+
+                logger.Debug(output);
+                logger.Debug(error);
+            //});
+
+
             return 0;
         }
         public static List<ModelClasses.Movie> CreateConversionQueue(List<ModelClasses.Movie> MovieList)
@@ -79,7 +109,7 @@ namespace X264toX265.MediaOperations
                                 break;
                         }
                         logger.Info("Invoking FFmpeg");
-                        InvokeFFmpeg($"\"{movie.Path}\\{movie.MovieFiles.RelativePath}\"", $"\"{Utilities.Utilities.CurrentSettings.ConversionOutputDir}\\{movie.Title}-CONVERTED.mkv\"", _Options);
+                        InvokeFFmpeg($"{movie.Path}\\{movie.MovieFiles.RelativePath}", $"{Utilities.Utilities.CurrentSettings.ConversionOutputDir}\\{movie.Title}-CONVERTED.mkv", _Options);
                     }
                 }
                 return true;
@@ -88,6 +118,7 @@ namespace X264toX265.MediaOperations
             {
                 logger.Error(ex.Message);
                 logger.Debug(ex.InnerException);
+                logger.Debug(ex.StackTrace);
                 return false;
             }
         }

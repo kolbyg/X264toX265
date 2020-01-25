@@ -18,9 +18,9 @@ namespace X264toX265.MediaOperations
             {
                 foreach(Movie movie in MovieList)
                 {
-                    Utilities.Utilities.Logger.Info("Now Processing: " + movie.Title);
+                    Utilities.Utilities.Logger.Debug("Now Processing: " + movie.Title);
                     if (!movie.HasFile) {
-                        Utilities.Utilities.Logger.Info("Movie has no downloaded files, processing skipped");
+                        Utilities.Utilities.Logger.Debug("Movie has no downloaded files, processing skipped");
                         continue; //movie doesnt actually exist yet
                     }
 
@@ -32,7 +32,8 @@ namespace X264toX265.MediaOperations
                     bool _ConversionRequired = false;
 
                     if (_MediaInfoCodec > 0) {
-                        Utilities.Utilities.Logger.Info("Conversion IS required");
+                        Utilities.Utilities.Logger.Debug("Conversion IS required");
+                        Utilities.Utilities.Logger.Info($"Marking \"{movie.Title}\" as requiring conversion");
                         movie.ConversionRequired = true; //Mediainfo reports the file as not HEVC, conversion will be required.
                     }
 

@@ -50,7 +50,10 @@ namespace X264toX265
             if(!File.Exists(Utilities.Utilities.SettingsPath))
             {
                 if (File_Operations.Json.CreateSettings())
+                {
                     Utilities.Utilities.Logger.Info("The Settings JSON file does not exist, it has been created. Please exit the application and modify the settings file appropriately.");
+                    Environment.Exit(0);
+                }
                 else
                     throw new Exception("There was an error writing the config file.");
             }
@@ -75,6 +78,8 @@ namespace X264toX265
             }
             catch (Exception ex)
             {
+                Utilities.Utilities.Logger.Error(ex.Message);
+                Utilities.Utilities.Logger.Debug(ex.InnerException);
                 return false;
             }
         }

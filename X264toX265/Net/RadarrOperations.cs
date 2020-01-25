@@ -20,6 +20,8 @@ namespace X264toX265.Net
             }
             catch(Exception ex)
             {
+                Utilities.Utilities.Logger.Error(ex.Message);
+                Utilities.Utilities.Logger.Debug(ex.InnerException);
                 return null;
             }
         }
