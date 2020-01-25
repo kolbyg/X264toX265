@@ -9,6 +9,8 @@ namespace X264toX265.ModelClasses
     {
         [JsonProperty(PropertyName = "movieID")]
         public int MovieID { get; private set; }
+        [JsonProperty(PropertyName = "relativePath")]
+        public string RelativePath { get; private set; }
         [JsonProperty(PropertyName = "size")]
         public long Size { get; private set; }
         [JsonProperty(PropertyName = "quality")]

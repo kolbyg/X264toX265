@@ -43,14 +43,14 @@ namespace X264toX265.MediaOperations
                     }
                     else if (_MediaInfoCodec < _CustomFormatCodec && !_ConversionRequired)
                     {
-                        Utilities.Utilities.Logger.Info("The Mediainfo codec is better than what is set in Customformats, this will be fixed");
+                        Utilities.Utilities.Logger.Warn("The Mediainfo codec is better than what is set in Customformats, this will be fixed");
                         //The file is better quality than the profile and we are not converting the file, fix the profile, leave the file
                         //TODO
                     }
                     else
                     {
                         //The file is worse than the custom profile, but conversion is required anyways, log the error but no extra work is needed
-                        Utilities.Utilities.Logger.Info("Note: " + movie.CleanTitle + " has a custom format tag that is a better codec than the actual file. The file is scheduled for conversion anyways, but you may want to look into this if it happens often.");
+                        Utilities.Utilities.Logger.Warn($"{movie.CleanTitle} has a custom format tag that is a better codec than the actual file. The file is scheduled for conversion anyways, but you may want to look into this if it happens often.");
                     }
                 }
                 return MovieList;

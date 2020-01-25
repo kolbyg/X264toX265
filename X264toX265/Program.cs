@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Collections.Generic;
 
 namespace X264toX265
 {
@@ -22,13 +23,20 @@ namespace X264toX265
             Utilities.Utilities.Logger.Info("Loading Settings");
             LoadSettings();
 
+            Utilities.Utilities.Logger.Info("Processing Radarr...");
             Utilities.Utilities.Logger.Info("Being retrieving movies");
             LoadMovies();
 
             Utilities.Utilities.Logger.Info("Determining which, if any movies require conversion");
             Utilities.Utilities.Movies = MediaOperations.CheckFileCodec.GetMovieConversionList(Utilities.Utilities.Movies);
+            List<ModelClasses.Movie> MoviesToConvert = MediaOperations.ConvertFile.CreateConversionQueue(Utilities.Utilities.Movies);
+            Utilities.Utilities.Logger.Info($"There are {MoviesToConvert.Count.ToString()} movies to convert");
+
 
             //Do sonarr stuff
+            Utilities.Utilities.Logger.Info($"Converting...");
+            MediaOperations.ConvertFile.ConvertFiles(MoviesToConvert);
+
 
 
         }

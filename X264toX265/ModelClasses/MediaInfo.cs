@@ -16,7 +16,7 @@ namespace X264toX265.ModelClasses
         [JsonProperty(PropertyName = "videoProfile")]
         public string VideoProfile { get; private set; }
         [JsonProperty(PropertyName = "videoBitrate")]
-        public string VideoBitrate { get; private set; }
+        public int VideoBitrate { get; private set; }
         [JsonProperty(PropertyName = "videoBitdepth")]
         public string VideoBitdepth { get; private set; }
         [JsonProperty(PropertyName = "width")]

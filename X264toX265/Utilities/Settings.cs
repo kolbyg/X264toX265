@@ -12,7 +12,8 @@ namespace X264toX265.Utilities
         public string SonarrAPIKey { get; set; } = "INSERT_KEY";
         public string RadarrURL { get; set; } = "http://radarr-server.domain.com:7878";
         public string SonarrURL { get; set; } = "http://sonar-server.domain.com:8989";
-        public string FFmpegLocation { get; set; } = "lib\\ffmpeg.exe";
+        public string FFmpegLocation { get; set; } = "\\lib\\ffmpeg.exe";
+        public string ConversionOutputDir { get; set; } = "\\output";
 
     }
 }
