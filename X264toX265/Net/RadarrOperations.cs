@@ -13,7 +13,7 @@ namespace X264toX265.Net
             try
             {
                 RestClient client = new RestClient(RadarrURL);
-                RestRequest request = new RestRequest("movie?apikey=" + RadarrAPIKey, DataFormat.Json);
+                RestRequest request = new RestRequest("api/v3/movie?apiKey=" + RadarrAPIKey, DataFormat.Json);
 
                 var response = client.Get(request);
                 return response.Content;
