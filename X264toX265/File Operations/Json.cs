@@ -36,12 +36,12 @@ namespace X264toX265.File_Operations
                 return false;
             }
         }
-        public static List<ModelClasses.Movie> ParseMovies(string RadarrMovies)
+        public static List<ModelClasses.Radarr.Movie> ParseMovies(string RadarrMovies)
         {
             try
             {
                 var _settings = new JsonSerializerSettings() { };
-                var _movies = JsonConvert.DeserializeObject<List<ModelClasses.Movie>>(RadarrMovies, _settings);
+                var _movies = JsonConvert.DeserializeObject<List<ModelClasses.Radarr.Movie>>(RadarrMovies, _settings);
                 return _movies;
             }
             catch (Exception ex)

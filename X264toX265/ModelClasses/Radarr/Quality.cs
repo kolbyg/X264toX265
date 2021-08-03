@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Newtonsoft.Json;
 
-namespace X264toX265.ModelClasses
+namespace X264toX265.ModelClasses.Radarr
 {
     class Quality
     {

@@ -12,13 +12,14 @@ namespace X264toX265.Net
         {
             try
             {
+                Utilities.Utilities.Logger.Debug("Starting REST call to Radarr API located at " + RadarrURL);
                 RestClient client = new RestClient(RadarrURL);
                 RestRequest request = new RestRequest("api/v3/movie?apiKey=" + RadarrAPIKey, DataFormat.Json);
 
                 var response = client.Get(request);
                 return response.Content;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Utilities.Utilities.Logger.Error(ex.Message);
                 Utilities.Utilities.Logger.Debug(ex.InnerException);
@@ -29,6 +30,7 @@ namespace X264toX265.Net
         {
             try
             {
+                Utilities.Utilities.Logger.Debug("Starting REST call to Sonarr API located at " + SonarrURL);
                 RestClient client = new RestClient(SonarrURL);
                 RestRequest request = new RestRequest("api/series?apiKey=" + SonarrAPIKey, DataFormat.Json);
 
@@ -46,6 +48,7 @@ namespace X264toX265.Net
         {
             try
             {
+                Utilities.Utilities.Logger.Debug("Starting REST call to Sonarr API located at " + SonarrURL);
                 RestClient client = new RestClient(SonarrURL);
                 RestRequest request = new RestRequest("api/episodefile?seriesId=" + SeriesID + "&apiKey=" + SonarrAPIKey, DataFormat.Json);
 

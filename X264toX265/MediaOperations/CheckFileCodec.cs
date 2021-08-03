@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using X264toX265.ModelClasses;
 
 namespace X264toX265.MediaOperations
 {
@@ -12,11 +11,11 @@ namespace X264toX265.MediaOperations
         /// </summary>
         /// <param name=""></param>
         /// <returns></returns>
-        public static void GetMovieConversionList(List<Movie> MovieList)
+        public static void GetMovieConversionList(List<ModelClasses.Radarr.Movie> MovieList)
         {
             try
             {
-                foreach(Movie movie in MovieList)
+                foreach(ModelClasses.Radarr.Movie movie in MovieList)
                 {
                     Utilities.Utilities.Logger.Debug("Now Processing: " + movie.Title);
                     if (!movie.HasFile) {
@@ -24,8 +23,8 @@ namespace X264toX265.MediaOperations
                         continue; //movie doesnt actually exist yet
                     }
 
-                    int _MediaInfoCodec = CodecTypes.GetCodecID(movie.MovieFiles.MediaInfo.VideoCodec);
-                    Utilities.Utilities.Logger.Debug("MediaInfo Codec: " + CodecTypes.CodecNames[_MediaInfoCodec]);
+                    int _MediaInfoCodec = ModelClasses.CodecTypes.GetCodecID(movie.MovieFiles.MediaInfo.VideoCodec);
+                    Utilities.Utilities.Logger.Debug("MediaInfo Codec: " + ModelClasses.CodecTypes.CodecNames[_MediaInfoCodec]);
 
                     if (_MediaInfoCodec > 0) {
                         Utilities.Utilities.Logger.Debug("Conversion IS required");
@@ -55,8 +54,8 @@ namespace X264toX265.MediaOperations
                     foreach(ModelClasses.Sonarr.EpisodeFile episode in series.Episodes)
                     {
                         Utilities.Utilities.Logger.Debug("Now Processing Episode ID: " + episode.ID);
-                        int _MediaInfoCodec = CodecTypes.GetCodecID(episode.MediaInfo.VideoCodec);
-                        Utilities.Utilities.Logger.Debug("MediaInfo Codec: " + CodecTypes.CodecNames[_MediaInfoCodec]);
+                        int _MediaInfoCodec = ModelClasses.CodecTypes.GetCodecID(episode.MediaInfo.VideoCodec);
+                        Utilities.Utilities.Logger.Debug("MediaInfo Codec: " + ModelClasses.CodecTypes.CodecNames[_MediaInfoCodec]);
 
                         if (_MediaInfoCodec > 0)
                         {
