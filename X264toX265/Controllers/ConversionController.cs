@@ -9,24 +9,58 @@ namespace X264toX265.Controllers
 {
     class ConversionController
     {
-        public static void BeginConversion()
+        public static void BeginConversion(bool IsForced)
         {
             Utilities.Utilities.Logger.Info("Loading Settings");
             LoadSettings();
 
+            //ConvertMovies(IsForced);
+
+            ConvertTV(IsForced);
+
+        }
+        static void ConvertMovies(bool IsForced)
+        {
             Utilities.Utilities.Logger.Info("Processing Radarr...");
             Utilities.Utilities.Logger.Info("Being retrieving movies");
             LoadMovies();
 
             Utilities.Utilities.Logger.Info("Determining which, if any movies require conversion");
-            Utilities.Utilities.Movies = MediaOperations.CheckFileCodec.GetMovieConversionList(Utilities.Utilities.Movies);
+            MediaOperations.CheckFileCodec.GetMovieConversionList(Utilities.Utilities.Movies);
             List<ModelClasses.Movie> MoviesToConvert = MediaOperations.ConvertFile.CreateConversionQueue(Utilities.Utilities.Movies);
             Utilities.Utilities.Logger.Info($"There are {MoviesToConvert.Count.ToString()} movies to convert");
 
+            if(MoviesToConvert.Count < Utilities.Utilities.CurrentSettings.MaxUnattendedMovies || IsForced)
+            {
+                Utilities.Utilities.Logger.Info($"Converting...");
+                MediaOperations.ConvertFile.ConvertFiles(MoviesToConvert);
+            }
+            else
+            {
+                Utilities.Utilities.Logger.Warn("Too many movies in the queue, increase MaxUnattendedMovies or run with --force");
+            }
+        }
+        static void ConvertTV(bool IsForced)
+        {
+            Utilities.Utilities.Logger.Info("Processing Sonarr...");
+            Utilities.Utilities.Logger.Info("Being retrieving series");
+            LoadSeries();
 
-            //Do sonarr stuff
-            Utilities.Utilities.Logger.Info($"Converting...");
-            MediaOperations.ConvertFile.ConvertFiles(MoviesToConvert);
+            Utilities.Utilities.Logger.Info("Determining which, if any episodes require conversion");
+            MediaOperations.CheckFileCodec.GetEpisodeConversionList(Utilities.Utilities.Series);
+            List<ModelClasses.Sonarr.EpisodeFile> EpisodesToConvert = MediaOperations.ConvertFile.CreateConversionQueue(Utilities.Utilities.Series);
+            Utilities.Utilities.Logger.Info($"There are {EpisodesToConvert.Count.ToString()} episodes to convert");
+
+            if (EpisodesToConvert.Count < Utilities.Utilities.CurrentSettings.MaxUnattendedEpisodes || IsForced)
+            {
+                Utilities.Utilities.Logger.Info($"Converting...");
+                //MediaOperations.ConvertFile.ConvertFiles(EpisodesToConvert);
+            }
+            else
+            {
+                Utilities.Utilities.Logger.Warn("Too many movies in the queue, increase MaxUnattendedMovies or run with --force");
+            }
+
         }
         static bool LoadSettings()
         {
@@ -55,9 +89,34 @@ namespace X264toX265.Controllers
             try
             {
                 Utilities.Utilities.Logger.Info("Retrieving movies json output from the Radarr API");
-                string _radarrJsonMovies = Net.RadarrOperations.RetrieveMovies(Utilities.Utilities.CurrentSettings.RadarrURL, Utilities.Utilities.CurrentSettings.RadarrAPIKey);
+                string _radarrJsonMovies = Net.APIController.RetrieveMovies(Utilities.Utilities.CurrentSettings.RadarrURL, Utilities.Utilities.CurrentSettings.RadarrAPIKey);
                 Utilities.Utilities.Logger.Info("Parsing Radarr JSON");
                 Utilities.Utilities.Movies = File_Operations.Json.ParseMovies(_radarrJsonMovies);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Utilities.Utilities.Logger.Error(ex.Message);
+                Utilities.Utilities.Logger.Debug(ex.InnerException);
+                return false;
+            }
+        }
+        static bool LoadSeries()
+        {
+            try
+            {
+                Utilities.Utilities.Logger.Info("Retrieving series json output from the Sonarr API");
+                string _sonarrJsonSeries = Net.APIController.RetrieveSeries(Utilities.Utilities.CurrentSettings.SonarrURL, Utilities.Utilities.CurrentSettings.SonarrAPIKey);
+                Utilities.Utilities.Logger.Info("Parsing Series JSON");
+                Utilities.Utilities.Series = File_Operations.Json.ParseSeries(_sonarrJsonSeries);
+                Utilities.Utilities.Logger.Info("Retrieving episode lists");
+                foreach(ModelClasses.Sonarr.Series series in Utilities.Utilities.Series)
+                {
+                    Utilities.Utilities.Logger.Info("Processing " + series.Title);
+                    string _sonarrJsonEpisode = Net.APIController.RetrieveEpisodes(Utilities.Utilities.CurrentSettings.SonarrURL, Utilities.Utilities.CurrentSettings.SonarrAPIKey, series.ID);
+                    Utilities.Utilities.Logger.Info("Parsing Episode JSON");
+                    series.Episodes = File_Operations.Json.ParseEpisode(_sonarrJsonEpisode);
+                }
                 return true;
             }
             catch (Exception ex)

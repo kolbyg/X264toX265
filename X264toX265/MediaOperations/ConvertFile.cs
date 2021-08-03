@@ -13,14 +13,14 @@ namespace X264toX265.MediaOperations
         public readonly string[] PresetNames = {"ultrafast", "superfast", "veryfast", "faster", "fast", "medium", "slow", "slower", "veryslow", "placebo"};
         public readonly string[] PixelFormats = { "yuv420p" };
         public readonly string[] Profiles = { "main", "main10" };
-        public readonly string[] EncoderLibraries = { "hevc_nvenc", "libx265" };
+        public readonly string[] EncoderLibraries = { "hevc_nvenc", "libx265", "hevc_amf" };
         public readonly string[] AudioFormats = { "copy" };
         public int MaxBitrate = 10000;
         public int CRF = 28;
         public int Preset = 5;
         public int PixelFormat = 0;
         public int Profile = 0;
-        public int EncoderLibrary = 0;
+        public int EncoderLibrary = 2;
         public int AudioFormat = 0;
     }
     class ConvertFile
@@ -30,30 +30,30 @@ namespace X264toX265.MediaOperations
         {
             string _ffmpegCommandBase = $"-i \"{SourcePath}\" -c:v {Options.EncoderLibraries[Options.EncoderLibrary]} -crf {Options.CRF} -profile:v {Options.Profiles[Options.Profile]} -pixel_format {Options.PixelFormats[Options.PixelFormat]} -preset {Options.PresetNames[Options.Preset]} -c:a {Options.AudioFormats[Options.AudioFormat]} \"{DestinationPath}\"";
             logger.Debug($"FFmpeg location is {Utilities.Utilities.CurrentSettings.FFmpegLocation}, converion string: {_ffmpegCommandBase}");
-            if(!File.Exists(SourcePath))
+            if (!File.Exists(SourcePath))
             {
                 throw new Exception($"Source file passed to ffmpeg does not exist. {SourcePath}");
             }
-            if (!Directory.Exists(DestinationPath.Remove(DestinationPath.LastIndexOf(@"\"))))
-                Directory.CreateDirectory(DestinationPath);
+            //if (!Directory.Exists(DestinationPath.Remove(DestinationPath.LastIndexOf(@"\"))))
+            //    Directory.CreateDirectory(DestinationPath);
             //await Task.Run(() =>
             //{
-                Process p = new Process();
-                p.StartInfo.Arguments = _ffmpegCommandBase;
-                p.StartInfo.WorkingDirectory = Utilities.Utilities.CurrentSettings.FFmpegLocation;
-                p.StartInfo.FileName = $"{Utilities.Utilities.CurrentSettings.FFmpegLocation}\\ffmpeg.exe";
+            Process p = new Process();
+            p.StartInfo.Arguments = _ffmpegCommandBase;
+            p.StartInfo.WorkingDirectory = Utilities.Utilities.CurrentSettings.FFmpegLocation;
+            p.StartInfo.FileName = $"{Utilities.Utilities.CurrentSettings.FFmpegLocation}\\ffmpeg.exe";
             p.StartInfo.CreateNoWindow = false;
-                p.StartInfo.RedirectStandardError = true;
-                p.StartInfo.RedirectStandardOutput = true;
+            p.StartInfo.RedirectStandardError = false;
+            p.StartInfo.RedirectStandardOutput = false;
 
-                p.Start();
-                p.WaitForExit();
+            p.Start();
+            p.WaitForExit();
 
-                string output = p.StandardOutput.ReadToEnd();
-                string error = p.StandardError.ReadToEnd(); //ffmpeg seems to toss everything into stderr for some reason
+            //string output = p.StandardOutput.ReadToEnd();
+            //string error = p.StandardError.ReadToEnd(); //ffmpeg seems to toss everything into stderr for some reason
 
-                logger.Debug(output);
-                logger.Debug(error);
+            //logger.Debug(output);
+            //logger.Debug(error);
             //});
 
 
@@ -67,7 +67,35 @@ namespace X264toX265.MediaOperations
                 foreach (ModelClasses.Movie movie in MovieList)
                 {
                     if (movie.ConversionRequired)
+                    {
                         _ConversionQueue.Add(movie);
+                        logger.Debug("Added " + movie.Title + " to conversion queue. Current codec is " + movie.MovieFiles.MediaInfo.VideoCodec);
+                    }
+                }
+                return _ConversionQueue;
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex.Message);
+                logger.Debug(ex.InnerException);
+                return null;
+            }
+        }
+        public static List<ModelClasses.Sonarr.EpisodeFile> CreateConversionQueue(List<ModelClasses.Sonarr.Series> SeriesList)
+        {
+            try
+            {
+                List<ModelClasses.Sonarr.EpisodeFile> _ConversionQueue = new List<ModelClasses.Sonarr.EpisodeFile>();
+                foreach (ModelClasses.Sonarr.Series series in SeriesList)
+                {
+                    foreach (ModelClasses.Sonarr.EpisodeFile episode in series.Episodes)
+                    {
+                        if (episode.ConversionRequired)
+                        {
+                            _ConversionQueue.Add(episode);
+                            logger.Debug("Added episode ID " + episode.ID + " in " + series.Title + " to conversion queue. Current codec is " + episode.MediaInfo.VideoCodec);
+                        }
+                    }
                 }
                 return _ConversionQueue;
             }
@@ -110,6 +138,51 @@ namespace X264toX265.MediaOperations
                         }
                         logger.Info("Invoking FFmpeg");
                         InvokeFFmpeg($"{movie.Path}\\{movie.MovieFiles.RelativePath}", $"{Utilities.Utilities.CurrentSettings.ConversionOutputDir}\\{movie.Title}-CONVERTED.mkv", _Options);
+                    }
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex.Message);
+                logger.Debug(ex.InnerException);
+                logger.Debug(ex.StackTrace);
+                return false;
+            }
+        }
+        public static bool ConvertFiles(List<ModelClasses.Sonarr.EpisodeFile> ConversionList)
+        {
+            try
+            {
+                logger.Debug($"Begining conversion of {ConversionList.Count} episodes");
+                foreach (ModelClasses.Sonarr.EpisodeFile episode in ConversionList)
+                {
+                    //int _SourceBitrate = episode.MovieFiles.MediaInfo.VideoBitrate;
+                    long _SourceSize = episode.Size;
+                    int _CurrentConvertPass = 0;
+                    //logger.Debug($"Current series is {.CleanTitle}");//todo, LINQ to lookup series
+                    logger.Debug($"Current episode ID is {episode.ID}");
+                    //logger.Debug($"Source bitrate is {_SourceBitrate}");
+                    logger.Debug($"Source filesize is {_SourceSize}");
+                    while (_CurrentConvertPass < 3)
+                    {
+                        logger.Debug("Creating Conversion Options");
+                        ConversionOptions _Options = new ConversionOptions();
+                        switch (_CurrentConvertPass)
+                        {
+                            case 0:
+                                break;
+                            case 1:
+                                logger.Debug("Increasing CRF due to second pass");
+                                _Options.CRF += 2;
+                                break;
+                            case 2:
+                                logger.Debug("Increasing CRF due to third pass");
+                                _Options.CRF += 4;
+                                break;
+                        }
+                        logger.Info("Invoking FFmpeg");
+                        InvokeFFmpeg($"{episode.Path}", $"{Utilities.Utilities.CurrentSettings.ConversionOutputDir}\\{episode.RelativePath}-CONVERTED.mkv", _Options);
                     }
                 }
                 return true;

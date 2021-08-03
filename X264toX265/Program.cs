@@ -9,6 +9,7 @@ namespace X264toX265
         static void Main(string[] args)
         {
             //Check if arguments were passed to the application
+            bool IsForced = false;
             if (CheckArguments(args))
             {
                 Utilities.Utilities.Logger.Info("Arguments were passed to the application.");
@@ -18,7 +19,7 @@ namespace X264toX265
             {
                 Utilities.Utilities.Logger.Info("Arguments were NOT passed to the application.");
                 Utilities.Utilities.Logger.Info("Beginning conversion with the defaults");
-                Controllers.ConversionController.BeginConversion();
+                Controllers.ConversionController.BeginConversion(IsForced);
             }
 
         }

@@ -14,6 +14,8 @@ namespace X264toX265.Utilities
         public string SonarrURL { get; set; } = "http://sonar-server.domain.com:8989";
         public string FFmpegLocation { get; set; } = "\\lib\\ffmpeg.exe";
         public string ConversionOutputDir { get; set; } = "\\output";
+        public int MaxUnattendedMovies { get; set; } = 10;
+        public int MaxUnattendedEpisodes { get; set; } = 20;
 
     }
 }
