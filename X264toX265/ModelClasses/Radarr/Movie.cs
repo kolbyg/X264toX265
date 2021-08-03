@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Newtonsoft.Json;
 
-namespace X264toX265.ModelClasses
+namespace X264toX265.ModelClasses.Radarr
 {
     class Movie
     {
@@ -15,8 +15,6 @@ namespace X264toX265.ModelClasses
         public long SizeOnDisk { get; private set; }
         [JsonProperty(PropertyName = "status")]
         public string Status { get; private set; }
-        [JsonProperty(PropertyName = "downloaded")]
-        public bool Downloaded { get; private set; }
         [JsonProperty(PropertyName = "hasFile")]
         public bool HasFile { get; private set; }
         [JsonProperty(PropertyName = "path")]

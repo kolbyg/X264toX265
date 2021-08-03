@@ -3,18 +3,12 @@ using System.Collections.Generic;
 using System.Text;
 using Newtonsoft.Json;
 
-namespace X264toX265.ModelClasses
+namespace X264toX265.ModelClasses.Radarr
 {
     class MediaInfo
     {
-        [JsonProperty(PropertyName = "containerFormat")]
-        public string ContainerFormat { get; private set; }
-        [JsonProperty(PropertyName = "videoFormat")]
-        public string VideoFormat { get; private set; }
-        [JsonProperty(PropertyName = "videoCodecID")]
-        public string VideoCodecID { get; private set; }
-        [JsonProperty(PropertyName = "videoProfile")]
-        public string VideoProfile { get; private set; }
+        [JsonProperty(PropertyName = "videoCodec")]
+        public string VideoCodec { get; private set; }
         [JsonProperty(PropertyName = "videoBitrate")]
         public int VideoBitrate { get; private set; }
         [JsonProperty(PropertyName = "videoBitdepth")]
@@ -23,10 +17,12 @@ namespace X264toX265.ModelClasses
         public string Width { get; private set; }
         [JsonProperty(PropertyName = "height")]
         public string Height { get; private set; }
+        [JsonProperty(PropertyName = "resolution")]
+        public string Resolution { get; private set; }
         [JsonProperty(PropertyName = "audioFormat")]
         public string AudioFormat { get; private set; }
-        [JsonProperty(PropertyName = "audioCodecID")]
-        public string AudioCodecID { get; private set; }
+        [JsonProperty(PropertyName = "audioCodec")]
+        public string AudioCodec { get; private set; }
         [JsonProperty(PropertyName = "audioBitrate")]
         public string AudioBitrate { get; private set; }
         [JsonProperty(PropertyName = "videoFps")]
