@@ -16,6 +16,17 @@ namespace X264toX265.Utilities
         public string ConversionOutputDir { get; set; } = "\\output";
         public int MaxUnattendedMovies { get; set; } = 10;
         public int MaxUnattendedEpisodes { get; set; } = 20;
+        public FFmpegSettings FFmpegSettings { get; set; } = new FFmpegSettings();
 
+    }
+    class FFmpegSettings
+    {
+        public int MaxBitrate { get; set; } = 10000;
+        public int CRF { get; set; } = 28;
+        public int Preset { get; set; } = 5;
+        public int PixelFormat { get; set; } = 0;
+        public int Profile { get; set; } = 0;
+        public int EncoderLibrary { get; set; } = 2;
+        public int AudioFormat { get; set; } = 0;
     }
 }

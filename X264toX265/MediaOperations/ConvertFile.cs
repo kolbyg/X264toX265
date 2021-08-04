@@ -15,13 +15,23 @@ namespace X264toX265.MediaOperations
         public readonly string[] Profiles = { "main", "main10" };
         public readonly string[] EncoderLibraries = { "hevc_nvenc", "libx265", "hevc_amf" };
         public readonly string[] AudioFormats = { "copy" };
-        public int MaxBitrate = 10000;
-        public int CRF = 28;
-        public int Preset = 5;
-        public int PixelFormat = 0;
-        public int Profile = 0;
-        public int EncoderLibrary = 2;
-        public int AudioFormat = 0;
+        public int MaxBitrate { get; set; }
+        public int CRF { get; set; }
+        public int Preset { get; set; }
+        public int PixelFormat { get; set; }
+        public int Profile { get; set; }
+        public int EncoderLibrary { get; set; }
+        public int AudioFormat { get; set; }
+        public ConversionOptions()
+        {
+            MaxBitrate = Utilities.Utilities.CurrentSettings.FFmpegSettings.MaxBitrate;
+            CRF = Utilities.Utilities.CurrentSettings.FFmpegSettings.CRF;
+            Preset = Utilities.Utilities.CurrentSettings.FFmpegSettings.Preset;
+            PixelFormat = Utilities.Utilities.CurrentSettings.FFmpegSettings.PixelFormat;
+            Profile = Utilities.Utilities.CurrentSettings.FFmpegSettings.Profile;
+            EncoderLibrary = Utilities.Utilities.CurrentSettings.FFmpegSettings.EncoderLibrary;
+            AudioFormat = Utilities.Utilities.CurrentSettings.FFmpegSettings.AudioFormat;
+        }
     }
     class ConvertFile
     {
