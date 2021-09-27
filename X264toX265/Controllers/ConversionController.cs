@@ -26,7 +26,7 @@ namespace X264toX265.Controllers
                 ConvertMovies(MoviesToConvert);
             }
             else
-                Utilities.Utilities.Logger.Info("Too many movies in the queue, increase MaxUnattendedMovies or run with --force. Movie processing will be skipped.");
+                Utilities.Utilities.Logger.Warn("Too many movies in the queue, increase MaxUnattendedMovies or run with --force. Movie processing will be skipped.");
 
             if (EpisodesToConvert.Count < Utilities.Utilities.CurrentSettings.MaxUnattendedEpisodes || Utilities.Utilities.IsForced)
             {
@@ -35,7 +35,7 @@ namespace X264toX265.Controllers
             }
             else
             {
-                Utilities.Utilities.Logger.Warn("Too many episodes in the queue, increase MaxUnattendedMovies or run with --force. Episode processing will be skipped.");
+                Utilities.Utilities.Logger.Warn("Too many episodes in the queue, increase MaxUnattendeEpisodes or run with --force. Episode processing will be skipped.");
             }
 
         }

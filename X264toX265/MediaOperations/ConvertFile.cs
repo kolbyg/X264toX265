@@ -109,6 +109,50 @@ namespace X264toX265.MediaOperations
                 return null;
             }
         }
+        public static bool CheckConversionResults(long SourceFilesize, string DestinationFile)
+        {
+            ///This doesnt work right now and I dont know why. All the logic below is fine, but the CRF that is passed to ffmpeg doesnt actually affect the filesize, so its pointless. I'll fix it one day.
+            
+            /**long DestinationFilesize;
+            FileInfo fi = new FileInfo(DestinationFile);
+            DestinationFilesize = fi.Length;
+            Utilities.Utilities.Logger.Debug("Source file is " + SourceFilesize + " bytes");
+            Utilities.Utilities.Logger.Debug("Destination file is " + DestinationFilesize + " bytes");
+
+            //Bunch-o-if's, This is probably horrible, I don't care
+            if (DestinationFilesize <= 50000000) //make sure its not tiny AF (probably would be an error)
+            {
+                Utilities.Utilities.Logger.Debug("Failing due to tiny file");
+                return false;
+            }
+            if (DestinationFilesize > SourceFilesize) //make sure its not larger than the source
+            {
+                Utilities.Utilities.Logger.Debug("Failing due to larger than source");
+                return false;
+            }
+            if ((DestinationFilesize * 1.3) > SourceFilesize) //make sure its more than slightly smaller
+            {
+                Utilities.Utilities.Logger.Debug("Failing due to not smaller enough");
+                return false;
+            }
+            */
+            Utilities.Utilities.Logger.Debug("Transcode succeeded.");
+            return true; //if none of the above apply, return true.
+        }
+        public static bool CheckConversionDirSize()
+        {
+            DirectoryInfo di = new DirectoryInfo(Utilities.Utilities.CurrentSettings.ConversionOutputDir);
+            long size = 0;
+            foreach (FileInfo fi in di.GetFiles("*", SearchOption.AllDirectories))
+            {
+                size += fi.Length;
+            }
+            Utilities.Utilities.Logger.Info("Output dir size is currently " + size);
+            if (size >= Utilities.Utilities.CurrentSettings.MaxOutputDirSize)
+                return true;
+            else return false;
+
+        }
         public static bool ConvertFiles(List<ModelClasses.Radarr.Movie> ConversionList)
         {
             try
@@ -122,8 +166,8 @@ namespace X264toX265.MediaOperations
                     Utilities.Utilities.Logger.Debug($"Current movie is {movie.CleanTitle}");
                     Utilities.Utilities.Logger.Debug($"Source bitrate is {_SourceBitrate}");
                     Utilities.Utilities.Logger.Debug($"Source filesize is {_SourceSize}");
-                    //while (_CurrentConvertPass < 3)
-                    //{ TODO add auto downgrading quality based on filesize
+                    while (_CurrentConvertPass < 3)
+                    { 
                         Utilities.Utilities.Logger.Debug("Creating Conversion Options");
                         ConversionOptions _Options = new ConversionOptions();
                         switch (_CurrentConvertPass)
@@ -139,8 +183,26 @@ namespace X264toX265.MediaOperations
                                 _Options.CRF += 4;
                                 break;
                         }
-                        InvokeFFmpeg($"{movie.Path}\\{movie.MovieFiles.RelativePath}", $"{Utilities.Utilities.CurrentSettings.ConversionOutputDir}\\{movie.Title}-CONVERTED.mkv", _Options);
-                    //}
+                        if (CheckConversionDirSize())
+                        {
+                            Utilities.Utilities.Logger.Warn("Output directory full, exiting...");
+                            return false;
+                        }
+                    string _SourcePath = $"{movie.Path}\\{movie.MovieFiles.RelativePath}";
+                    string _DestinationPath = $"{Utilities.Utilities.CurrentSettings.ConversionOutputDir}\\{movie.MovieFiles.RelativePath.Remove(movie.MovieFiles.RelativePath.LastIndexOf('.'))}-CONVERTED.mkv";
+                    InvokeFFmpeg(_SourcePath, _DestinationPath, _Options);
+                        if (CheckConversionResults(_SourceSize, _DestinationPath))
+                        {
+                            Utilities.Utilities.Logger.Debug("Conversion successful, breaking from loop.");
+                            break;
+                        }
+                        else
+                        {
+                            Utilities.Utilities.Logger.Warn("Conversion failed to produce a viable file, rerunning...");
+                            File.Delete(_DestinationPath);
+                            _CurrentConvertPass++;
+                        }
+                    }
                 }
                 return true;
             }
@@ -166,8 +228,8 @@ namespace X264toX265.MediaOperations
                     Utilities.Utilities.Logger.Debug($"Current episode ID is {episode.ID}");
                     //logger.Debug($"Source bitrate is {_SourceBitrate}");
                     Utilities.Utilities.Logger.Debug($"Source filesize is {_SourceSize}");
-                    //while (_CurrentConvertPass < 3)
-                    //{ TODO add auto downgrading quality based on filesize
+                    while (_CurrentConvertPass < 3)
+                    {
                         Utilities.Utilities.Logger.Debug("Creating Conversion Options");
                         ConversionOptions _Options = new ConversionOptions();
                         switch (_CurrentConvertPass)
@@ -183,8 +245,26 @@ namespace X264toX265.MediaOperations
                                 _Options.CRF += 4;
                                 break;
                         }
-                        InvokeFFmpeg($"{episode.Path}", $"{Utilities.Utilities.CurrentSettings.ConversionOutputDir}\\{episode.RelativePath}-CONVERTED.mkv", _Options);
-                    //}
+                        if (CheckConversionDirSize())
+                        {
+                            Utilities.Utilities.Logger.Warn("Output directory full, exiting...");
+                            return false;
+                        }
+                        string _SourcePath = $"{episode.Path}";
+                        string _DestinationPath = $"{Utilities.Utilities.CurrentSettings.ConversionOutputDir}\\{episode.RelativePath.Remove(episode.RelativePath.LastIndexOf('.')).Substring(episode.RelativePath.LastIndexOf('\\'))}-CONVERTED.mkv";
+                        InvokeFFmpeg(_SourcePath, _DestinationPath, _Options);
+                        if (CheckConversionResults(_SourceSize, _DestinationPath))
+                        {
+                            Utilities.Utilities.Logger.Debug("Conversion successful, breaking from loop.");
+                            break;
+                        }
+                        else
+                        {
+                            Utilities.Utilities.Logger.Warn("Conversion failed to produce a viable file, rerunning...");
+                            File.Delete(_DestinationPath);
+                            _CurrentConvertPass++;
+                        }
+                    }
                 }
                 return true;
             }
