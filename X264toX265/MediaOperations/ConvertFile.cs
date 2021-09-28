@@ -35,10 +35,29 @@ namespace X264toX265.MediaOperations
     }
     class ConvertFile
     {
+        private static string GetFFmpegBaseCommand(string SourcePath, string DestinationPath, ConversionOptions Options)
+        {
+            string _ffmpegCommandBase = "";
+            _ffmpegCommandBase += $"-i \"{SourcePath}\" ";
+            switch (Options.EncoderLibrary)
+            {
+                case 0:
+                    break;
+                case 1:
+                    break;
+                case 2:
+                    _ffmpegCommandBase += $"-c:v {Options.EncoderLibraries[Options.EncoderLibrary]} -profile:v {Options.Profiles[Options.Profile]} -rc 0 -quality 5 -qp_p {Options.CRF} -qp_i {Options.CRF} ";
+                    break;
+            }
+            _ffmpegCommandBase += $"-c:a {Options.AudioFormats[Options.AudioFormat]} ";
+            _ffmpegCommandBase += $"\"{DestinationPath}\"";
+            return _ffmpegCommandBase;
+        }
         private static int InvokeFFmpeg(string SourcePath, string DestinationPath, ConversionOptions Options)
         {
             Utilities.Utilities.Logger.Debug("Preparing FFmpeg...");
-            string _ffmpegCommandBase = $"-i \"{SourcePath}\" -c:v {Options.EncoderLibraries[Options.EncoderLibrary]} -crf {Options.CRF} -profile:v {Options.Profiles[Options.Profile]} -pixel_format {Options.PixelFormats[Options.PixelFormat]} -preset {Options.PresetNames[Options.Preset]} -c:a {Options.AudioFormats[Options.AudioFormat]} \"{DestinationPath}\"";
+
+            string _ffmpegCommandBase = GetFFmpegBaseCommand(SourcePath, DestinationPath, Options);//$"-i \"{SourcePath}\" -c:v {Options.EncoderLibraries[Options.EncoderLibrary]} -crf {Options.CRF} -profile:v {Options.Profiles[Options.Profile]} -pixel_format {Options.PixelFormats[Options.PixelFormat]} -preset {Options.PresetNames[Options.Preset]} -c:a {Options.AudioFormats[Options.AudioFormat]} \"{DestinationPath}\"";
             Utilities.Utilities.Logger.Debug($"FFmpeg location is {Utilities.Utilities.CurrentSettings.FFmpegLocation}, converion string: {_ffmpegCommandBase}");
             if (!File.Exists(SourcePath))
             {
@@ -112,8 +131,9 @@ namespace X264toX265.MediaOperations
         public static bool CheckConversionResults(long SourceFilesize, string DestinationFile)
         {
             ///This doesnt work right now and I dont know why. All the logic below is fine, but the CRF that is passed to ffmpeg doesnt actually affect the filesize, so its pointless. I'll fix it one day.
+            //I was dumb and used the wrong ffmpeg commands, this appears to work now
             
-            /**long DestinationFilesize;
+            long DestinationFilesize;
             FileInfo fi = new FileInfo(DestinationFile);
             DestinationFilesize = fi.Length;
             Utilities.Utilities.Logger.Debug("Source file is " + SourceFilesize + " bytes");
@@ -135,7 +155,7 @@ namespace X264toX265.MediaOperations
                 Utilities.Utilities.Logger.Debug("Failing due to not smaller enough");
                 return false;
             }
-            */
+            
             Utilities.Utilities.Logger.Debug("Transcode succeeded.");
             return true; //if none of the above apply, return true.
         }
@@ -176,11 +196,11 @@ namespace X264toX265.MediaOperations
                                 break;
                             case 1:
                                 Utilities.Utilities.Logger.Debug("Increasing CRF due to second pass");
-                                _Options.CRF += 2;
+                                _Options.CRF += 4;
                                 break;
                             case 2:
                                 Utilities.Utilities.Logger.Debug("Increasing CRF due to third pass");
-                                _Options.CRF += 4;
+                                _Options.CRF += 8;
                                 break;
                         }
                         if (CheckConversionDirSize())
@@ -238,11 +258,11 @@ namespace X264toX265.MediaOperations
                                 break;
                             case 1:
                                 Utilities.Utilities.Logger.Debug("Increasing CRF due to second pass");
-                                _Options.CRF += 2;
+                                _Options.CRF += 4;
                                 break;
                             case 2:
                                 Utilities.Utilities.Logger.Debug("Increasing CRF due to third pass");
-                                _Options.CRF += 4;
+                                _Options.CRF += 8;
                                 break;
                         }
                         if (CheckConversionDirSize())
