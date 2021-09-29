@@ -1,33 +1,43 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Generic;
+using NLog;
 
 namespace X264toX265
 {
     class Program
     {
+        static Logger logger = LogManager.GetCurrentClassLogger();
         static void Main(string[] args)
         {
-            Utilities.Utilities.Logger.Info("Media Conversion Utility v0.1");
-            Utilities.Utilities.Logger.Info("Created by Kolby Graham");
+            logger.Info("Media Conversion Utility BETA v0.14");
+            logger.Info("Created by Kolby Graham (https://kolbygraham.net)");
 
-            Utilities.Utilities.Logger.Debug("Parsing launch arguments...");
-            if (CheckArguments(args))
+            logger.Debug("Parsing launch arguments...");
+            if (args.Length != 0)
             {
-                Utilities.Utilities.Logger.Debug("Arguments were passed to the application.");
-                //TODO parse arguments
+                logger.Debug("Arguments were passed to the application.");
+                ParseArguments(args);
             }
             else
             {
-                Utilities.Utilities.Logger.Debug("Arguments were NOT passed to the application.");
-                Utilities.Utilities.Logger.Info("Beginning conversion in unattended mode");
-                Controllers.ConversionController.BeginConversion(false);
+                logger.Debug("Arguments were NOT passed to the application.");
+                logger.Info("Beginning conversion in unattended mode");
+                Controllers.ConversionController.BeginConversion(false, false);
             }
 
         }
-        static bool CheckArguments(string[] args)
+        static void ParseArguments(string[] args)
         {
-            return false; //TODO make it actually check arguments
+            switch (args[0])
+            {
+                case "--ExportList":
+                    Controllers.ConversionController.BeginConversion(false, true);
+                    break;
+                case "--Force":
+                    Controllers.ConversionController.BeginConversion(true, false);
+                    break;
+            }
         }
     }
 }

@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using NLog;
 
 namespace X264toX265.MediaOperations
 {
     class CheckFileCodec
     {
+        static Logger logger = LogManager.GetCurrentClassLogger();
         /// <summary>
         /// Compares the mediainfo result of each media file to the codec in the qualityprofile. Sometimes Radarr/Sonarr are dumb and don't properly tag the media based on mediainfo
         /// </summary>
@@ -17,26 +19,26 @@ namespace X264toX265.MediaOperations
             {
                 foreach(ModelClasses.Radarr.Movie movie in MovieList)
                 {
-                    Utilities.Utilities.Logger.Debug("Now Processing: " + movie.Title);
+                    logger.Debug("Now Processing: " + movie.Title);
                     if (!movie.HasFile) {
-                        Utilities.Utilities.Logger.Debug("Movie has no downloaded files, processing skipped");
+                        logger.Debug("Movie has no downloaded files, processing skipped");
                         continue; //movie doesnt actually exist yet
                     }
 
                     int _MediaInfoCodec = ModelClasses.CodecTypes.GetCodecID(movie.MovieFiles.MediaInfo.VideoCodec);
-                    Utilities.Utilities.Logger.Debug("MediaInfo Codec: " + ModelClasses.CodecTypes.CodecNames[_MediaInfoCodec]);
+                    logger.Debug("MediaInfo Codec: " + ModelClasses.CodecTypes.CodecNames[_MediaInfoCodec]);
 
                     if (_MediaInfoCodec > 0) {
-                        Utilities.Utilities.Logger.Debug("Conversion IS required");
-                        Utilities.Utilities.Logger.Info($"Marking \"{movie.Title}\" as requiring conversion");
+                        logger.Debug("Conversion IS required");
+                        logger.Info($"Marking \"{movie.Title}\" as requiring conversion");
                         movie.ConversionRequired = true; //Mediainfo reports the file as not HEVC, conversion will be required.
                     }
                 }
             }
             catch(Exception ex)
             {
-                Utilities.Utilities.Logger.Error(ex.Message);
-                Utilities.Utilities.Logger.Debug(ex.InnerException);
+                logger.Error(ex.Message);
+                logger.Debug(ex.InnerException);
             }
         }
         public static void GetEpisodeConversionList(List<ModelClasses.Sonarr.Series> SeriesList)
@@ -45,22 +47,22 @@ namespace X264toX265.MediaOperations
             {
                 foreach (ModelClasses.Sonarr.Series series in SeriesList)
                 {
-                    Utilities.Utilities.Logger.Debug("Now Processing Series: " + series.Title);
+                    logger.Debug("Now Processing Series: " + series.Title);
                     /**if (!series.HasFile)
                     {
-                        Utilities.Utilities.Logger.Debug("Movie has no downloaded files, processing skipped");
+                        logger.Debug("Movie has no downloaded files, processing skipped");
                         continue; //movie doesnt actually exist yet
                     }*/
                     foreach(ModelClasses.Sonarr.EpisodeFile episode in series.Episodes)
                     {
-                        Utilities.Utilities.Logger.Debug("Now Processing Episode ID: " + episode.ID);
+                        logger.Debug("Now Processing Episode ID: " + episode.ID);
                         int _MediaInfoCodec = ModelClasses.CodecTypes.GetCodecID(episode.MediaInfo.VideoCodec);
-                        Utilities.Utilities.Logger.Debug("MediaInfo Codec: " + ModelClasses.CodecTypes.CodecNames[_MediaInfoCodec]);
+                        logger.Debug("MediaInfo Codec: " + ModelClasses.CodecTypes.CodecNames[_MediaInfoCodec]);
 
                         if (_MediaInfoCodec > 0)
                         {
-                            Utilities.Utilities.Logger.Debug("Conversion IS required");
-                            Utilities.Utilities.Logger.Info($"Marking episode ID {episode.ID} in \"{series.Title}\" as requiring conversion");
+                            logger.Debug("Conversion IS required");
+                            logger.Info($"Marking episode ID {episode.ID} in \"{series.Title}\" as requiring conversion");
                             episode.ConversionRequired = true; //Mediainfo reports the file as not HEVC, conversion will be required.
                         }
                     }
@@ -68,8 +70,8 @@ namespace X264toX265.MediaOperations
             }
             catch (Exception ex)
             {
-                Utilities.Utilities.Logger.Error(ex.Message);
-                Utilities.Utilities.Logger.Debug(ex.InnerException);
+                logger.Error(ex.Message);
+                logger.Debug(ex.InnerException);
             }
         }
     }

@@ -10,7 +10,6 @@ namespace X264toX265.Utilities
         public static readonly string SettingsPath = Environment.CurrentDirectory + "\\settings.json";
         public static List<ModelClasses.Radarr.Movie> Movies;
         public static List<ModelClasses.Sonarr.Series> Series;
-        public static NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
         public static bool IsForced = false; //Was the application run with --force?
     }
 }

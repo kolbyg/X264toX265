@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using System.IO;
+using NLog;
 
 namespace X264toX265.File_Operations
 {
     class Json
     {
+        static Logger logger = LogManager.GetCurrentClassLogger();
         public static bool CreateSettings()
         {
             try
@@ -17,8 +19,8 @@ namespace X264toX265.File_Operations
             }
             catch(Exception ex)
             {
-                Utilities.Utilities.Logger.Error(ex.Message);
-                Utilities.Utilities.Logger.Debug(ex.InnerException);
+                logger.Error(ex.Message);
+                logger.Debug(ex.InnerException);
                 return false;
             }
         }
@@ -31,8 +33,8 @@ namespace X264toX265.File_Operations
             }
             catch (Exception ex)
             {
-                Utilities.Utilities.Logger.Error(ex.Message);
-                Utilities.Utilities.Logger.Debug(ex.InnerException);
+                logger.Error(ex.Message);
+                logger.Debug(ex.InnerException);
                 return false;
             }
         }
@@ -46,8 +48,8 @@ namespace X264toX265.File_Operations
             }
             catch (Exception ex)
             {
-                Utilities.Utilities.Logger.Error(ex.Message);
-                Utilities.Utilities.Logger.Debug(ex.InnerException);
+                logger.Error(ex.Message);
+                logger.Debug(ex.InnerException);
                 return null;
             }
         }
@@ -61,8 +63,8 @@ namespace X264toX265.File_Operations
             }
             catch (Exception ex)
             {
-                Utilities.Utilities.Logger.Error(ex.Message);
-                Utilities.Utilities.Logger.Debug(ex.InnerException);
+                logger.Error(ex.Message);
+                logger.Debug(ex.InnerException);
                 return null;
             }
         }
@@ -76,8 +78,8 @@ namespace X264toX265.File_Operations
             }
             catch (Exception ex)
             {
-                Utilities.Utilities.Logger.Error(ex.Message);
-                Utilities.Utilities.Logger.Debug(ex.InnerException);
+                logger.Error(ex.Message);
+                logger.Debug(ex.InnerException);
                 return null;
             }
         }
