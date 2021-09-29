@@ -13,6 +13,8 @@ Simply run the application and it will start converting according to what you ha
 
 Two arguments are supported:
 --Force
+
 This will override the maximum conversion limits in settings.json
 --ExportList
+
 This will cause a list of all media tagged as "conversion required" to be output in the log. Use this to verify before run
