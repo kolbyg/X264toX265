@@ -8,53 +8,51 @@ namespace X264toX265.MediaOperations
 {
     public class ConversionOptions
     {
-        public readonly string[] PresetNames = {"ultrafast", "superfast", "veryfast", "faster", "fast", "medium", "slow", "slower", "veryslow", "placebo"};
+        /**public readonly string[] PresetNames = {"ultrafast", "superfast", "veryfast", "faster", "fast", "medium", "slow", "slower", "veryslow", "placebo"};
         public readonly string[] PixelFormats = { "yuv420p" };
         public readonly string[] Profiles = { "main", "main10" };
         public readonly string[] EncoderLibraries = { "hevc_nvenc", "libx265", "hevc_amf" };
-        public readonly string[] AudioFormats = { "copy" };
-        public int MaxBitrate { get; set; }
-        public int CRF { get; set; }
-        public int Preset { get; set; }
-        public int PixelFormat { get; set; }
-        public int Profile { get; set; }
-        public int EncoderLibrary { get; set; }
-        public int AudioFormat { get; set; }
+        public readonly string[] AudioFormats = { "copy" };*/
+        public Utilities.Transcoder Transcoder { get; set; }
         public ConversionOptions()
         {
-            MaxBitrate = Utilities.Utilities.CurrentSettings.FFmpegSettings.MaxBitrate;
+            Transcoder = Utilities.Utilities.CurrentSettings.Transcoder;
+            /**
+            MaxBitrate = Utilities.Utilities.CurrentSettings.TranscoderSettings.MaxBitrate;
+            AudioFormat = Utilities.Utilities.CurrentSettings.TranscoderSettings.AudioFormat;
+            EncoderLibrary = Utilities.Utilities.CurrentSettings.TranscoderSettings.EncoderLibrary;
             CRF = Utilities.Utilities.CurrentSettings.FFmpegSettings.CRF;
             Preset = Utilities.Utilities.CurrentSettings.FFmpegSettings.Preset;
             PixelFormat = Utilities.Utilities.CurrentSettings.FFmpegSettings.PixelFormat;
-            Profile = Utilities.Utilities.CurrentSettings.FFmpegSettings.Profile;
-            EncoderLibrary = Utilities.Utilities.CurrentSettings.FFmpegSettings.EncoderLibrary;
-            AudioFormat = Utilities.Utilities.CurrentSettings.FFmpegSettings.AudioFormat;
+            Profile = Utilities.Utilities.CurrentSettings.FFmpegSettings.Profile;*/
         }
     }
     class ConvertFile
     {
+        static long bytesSaved = 0;
         static Logger logger = LogManager.GetCurrentClassLogger();
         private static string GetFFmpegBaseCommand(string SourcePath, string DestinationPath, ConversionOptions Options)
         {
             logger.Debug("Creating FFmpeg command string");
             string _ffmpegCommandBase = "";
             _ffmpegCommandBase += $"-i \"{SourcePath}\" ";
-            switch (Options.EncoderLibrary)
+            switch (Options.Transcoder.EncoderLibrary)
             {
-                case 0:
+                case Utilities.EncoderLibrary.hevc_nvenc:
                     logger.Debug("Using NVENC");
-                    _ffmpegCommandBase += $"-c:v {Options.EncoderLibraries[Options.EncoderLibrary]} -profile:v {Options.Profiles[Options.Profile]} -rc constqp -qp {Options.CRF} ";
+                    _ffmpegCommandBase += $"-c:v {Options.Transcoder.EncoderLibrary} -profile:v {Options.Transcoder.NVENC.Profile} -rc:v {Options.Transcoder.NVENC.RC} -cq:v {Options.Transcoder.NVENC.cq} ";
                     break;
-                case 1:
+                case Utilities.EncoderLibrary.libx265:
                     logger.Error("Encoder not yet implemented.");
                     Environment.Exit(0);
                     break;
-                case 2:
+                case Utilities.EncoderLibrary.hevc_amf:
                     logger.Debug("Using AMF");
-                    _ffmpegCommandBase += $"-c:v {Options.EncoderLibraries[Options.EncoderLibrary]} -profile:v {Options.Profiles[Options.Profile]} -rc 0 -quality 5 -qp_p {Options.CRF} -qp_i {Options.CRF} ";
+                    _ffmpegCommandBase += $"-c:v {Options.Transcoder.EncoderLibrary} -profile:v {Options.Transcoder.AMF.Profile} -rc:v {Options.Transcoder.AMF.RC} -quality:v {Options.Transcoder.AMF.Quality} -qp_p {Options.Transcoder.AMF.qp_p} -qp_i {Options.Transcoder.AMF.qp_i} ";
                     break;
             }
-            _ffmpegCommandBase += $"-c:a {Options.AudioFormats[Options.AudioFormat]} ";
+            _ffmpegCommandBase += $"-c:a {Options.Transcoder.AudioFormat} ";
+            _ffmpegCommandBase += $"-c:s copy ";
             _ffmpegCommandBase += $"\"{DestinationPath}\"";
             logger.Debug("FFmpeg command is: " + _ffmpegCommandBase);
             return _ffmpegCommandBase;
@@ -163,6 +161,8 @@ namespace X264toX265.MediaOperations
             }
             
             logger.Debug("Transcode succeeded.");
+            bytesSaved += (SourceFilesize - DestinationFilesize);
+            logger.Debug("Bytes saved (running total): " + bytesSaved);
             return true; //if none of the above apply, return true.
         }
         public static bool CheckConversionDirSize()
@@ -186,6 +186,21 @@ namespace X264toX265.MediaOperations
             if (!Directory.Exists(movies)) Directory.CreateDirectory(movies);
             string shows = Utilities.Utilities.CurrentSettings.ConversionOutputDir + "\\shows";
             if (!Directory.Exists(shows)) Directory.CreateDirectory(shows);
+        }
+        private static void DecreaseQuality(ConversionOptions Options, int Amount)
+        {
+            switch (Options.Transcoder.EncoderLibrary)
+            {
+                case Utilities.EncoderLibrary.hevc_amf:
+                    Options.Transcoder.AMF.qp_i += Amount;
+                    Options.Transcoder.AMF.qp_p += Amount;
+                    break;
+                case Utilities.EncoderLibrary.libx265:
+                    break;
+                case Utilities.EncoderLibrary.hevc_nvenc:
+                    Options.Transcoder.NVENC.cq += Amount;
+                    break;
+            }
         }
         public static bool ConvertFiles(List<ModelClasses.Radarr.Movie> ConversionList)
         {
@@ -211,11 +226,11 @@ namespace X264toX265.MediaOperations
                                 break;
                             case 1:
                                 logger.Debug("Increasing CRF due to second pass");
-                                _Options.CRF += 4;
+                                DecreaseQuality(_Options, 4);
                                 break;
                             case 2:
                                 logger.Debug("Increasing CRF due to third pass");
-                                _Options.CRF += 8;
+                                DecreaseQuality(_Options, 8);
                                 break;
                         }
                         if (CheckConversionDirSize())
@@ -224,7 +239,7 @@ namespace X264toX265.MediaOperations
                             return false;
                         }
                     string _SourcePath = $"{movie.Path}\\{movie.MovieFiles.RelativePath}";
-                    string _DestinationPath = $"{Utilities.Utilities.CurrentSettings.ConversionOutputDir}\\{movie.MovieFiles.RelativePath.Remove(movie.MovieFiles.RelativePath.LastIndexOf('.'))}-CONVERTED.mkv";
+                    string _DestinationPath = $"{Utilities.Utilities.CurrentSettings.ConversionOutputDir}\\movies\\{movie.MovieFiles.RelativePath.Remove(movie.MovieFiles.RelativePath.LastIndexOf('.'))}-CONVERTED.mkv";
                     InvokeFFmpeg(_SourcePath, _DestinationPath, _Options);
                         if (CheckConversionResults(_SourceSize, _DestinationPath))
                         {
@@ -277,11 +292,11 @@ namespace X264toX265.MediaOperations
                                 break;
                             case 1:
                                 logger.Debug("Increasing CRF due to second pass");
-                                _Options.CRF += 4;
+                                DecreaseQuality(_Options, 4);
                                 break;
                             case 2:
                                 logger.Debug("Increasing CRF due to third pass");
-                                _Options.CRF += 8;
+                                DecreaseQuality(_Options, 8);
                                 break;
                         }
                         if (CheckConversionDirSize())

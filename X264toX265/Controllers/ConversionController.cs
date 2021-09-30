@@ -121,7 +121,7 @@ namespace X264toX265.Controllers
             try
             {
                 logger.Debug("Retrieving movies json output from the Radarr API");
-                string _radarrJsonMovies = Net.APIController.RetrieveMovies(Utilities.Utilities.CurrentSettings.RadarrURL, Utilities.Utilities.CurrentSettings.RadarrAPIKey);
+                string _radarrJsonMovies = Net.APIController.RetrieveMovies(Utilities.Utilities.CurrentSettings.API.Radarr.URL, Utilities.Utilities.CurrentSettings.API.Radarr.APIKey);
                 logger.Debug("Parsing Movie JSON");
                 Utilities.Utilities.Movies = File_Operations.Json.ParseMovies(_radarrJsonMovies);
                 return true;
@@ -138,14 +138,14 @@ namespace X264toX265.Controllers
             try
             {
                 logger.Debug("Retrieving series json output from the Sonarr API");
-                string _sonarrJsonSeries = Net.APIController.RetrieveSeries(Utilities.Utilities.CurrentSettings.SonarrURL, Utilities.Utilities.CurrentSettings.SonarrAPIKey);
+                string _sonarrJsonSeries = Net.APIController.RetrieveSeries(Utilities.Utilities.CurrentSettings.API.Sonarr.URL, Utilities.Utilities.CurrentSettings.API.Sonarr.APIKey);
                 logger.Debug("Parsing Series JSON");
                 Utilities.Utilities.Series = File_Operations.Json.ParseSeries(_sonarrJsonSeries);
                 logger.Debug("Retrieving episode lists");
                 foreach(ModelClasses.Sonarr.Series series in Utilities.Utilities.Series)
                 {
                     logger.Debug("Processing " + series.Title);
-                    string _sonarrJsonEpisode = Net.APIController.RetrieveEpisodes(Utilities.Utilities.CurrentSettings.SonarrURL, Utilities.Utilities.CurrentSettings.SonarrAPIKey, series.ID);
+                    string _sonarrJsonEpisode = Net.APIController.RetrieveEpisodes(Utilities.Utilities.CurrentSettings.API.Sonarr.URL, Utilities.Utilities.CurrentSettings.API.Sonarr.APIKey, series.ID);
                     logger.Debug("Parsing Episode JSON");
                     series.Episodes = File_Operations.Json.ParseEpisode(_sonarrJsonEpisode);
                 }
