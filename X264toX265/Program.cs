@@ -8,11 +8,16 @@ namespace X264toX265
     class Program
     {
         static Logger logger = LogManager.GetCurrentClassLogger();
+        static Controllers.ConversionController ConversionController;
         static void Main(string[] args)
         {
-            logger.Info("Media Conversion Utility BETA v0.14");
+            logger.Info("Media Conversion Utility BETA v0.15");
             logger.Info("Created by Kolby Graham (https://kolbygraham.net)");
-
+            logger.Debug("Loading Settings...");
+            //Globals.Settings = new Settings();
+            File_Operations.Json.LoadSettings();
+            logger.Debug("Setting up the controller");
+            ConversionController = new Controllers.ConversionController();
             logger.Debug("Parsing launch arguments...");
             if (args.Length != 0)
             {
@@ -23,7 +28,7 @@ namespace X264toX265
             {
                 logger.Debug("Arguments were NOT passed to the application.");
                 logger.Info("Beginning conversion in unattended mode");
-                Controllers.ConversionController.BeginConversion(false, false);
+                ConversionController.BeginConversion(false, false);
             }
 
         }
@@ -32,10 +37,10 @@ namespace X264toX265
             switch (args[0])
             {
                 case "--ExportList":
-                    Controllers.ConversionController.BeginConversion(false, true);
+                    ConversionController.BeginConversion(false, true);
                     break;
                 case "--Force":
-                    Controllers.ConversionController.BeginConversion(true, false);
+                    ConversionController.BeginConversion(true, false);
                     break;
             }
         }

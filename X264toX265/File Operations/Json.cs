@@ -9,12 +9,42 @@ namespace X264toX265.File_Operations
     class Json
     {
         static Logger logger = LogManager.GetCurrentClassLogger();
+        public static void LoadSettings()
+        {
+            if (!File.Exists(Globals.SettingsPath))
+            {
+                if (CreateSettings())
+                {
+                    logger.Warn("The Settings JSON file does not exist, it has been created. Please exit the application and modify the settings file appropriately.");
+                    Environment.Exit(0);
+                    return;
+                }
+                else
+                {
+                    throw new Exception("There was an error writing the config file.");
+                }
+            }
+            else
+            {
+                Settings settings = ParseSettings();
+                if (settings != null)
+                {
+                    Globals.Settings = settings;
+                    logger.Debug("The settings JSON has been loaded.");
+                    return;
+                }
+                else
+                {
+                    throw new Exception("There was an error loading the config file.");
+                }
+            }
+        }
         public static bool CreateSettings()
         {
             try
             {
-                string json = JsonConvert.SerializeObject(Utilities.Utilities.CurrentSettings, Formatting.Indented);
-                File.WriteAllText(Utilities.Utilities.SettingsPath, json);
+                string json = JsonConvert.SerializeObject(new Settings(), Formatting.Indented);
+                File.WriteAllText(Globals.SettingsPath, json);
                 return true;
             }
             catch(Exception ex)
@@ -24,18 +54,18 @@ namespace X264toX265.File_Operations
                 return false;
             }
         }
-        public static bool LoadSettings(){
+        public static Settings ParseSettings(){
             try {
-                string json = File.ReadAllText(Utilities.Utilities.SettingsPath);
+                string json = File.ReadAllText(Globals.SettingsPath);
 
-                Utilities.Utilities.CurrentSettings = JsonConvert.DeserializeObject<Utilities.Settings>(json);
-                return true;
+                var obj = JsonConvert.DeserializeObject<Settings>(json);
+                return obj;
             }
             catch (Exception ex)
             {
                 logger.Error(ex.Message);
                 logger.Debug(ex.InnerException);
-                return false;
+                return null;
             }
         }
         public static List<ModelClasses.Radarr.Movie> ParseMovies(string RadarrMovies)
